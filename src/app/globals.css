@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-surface text-neutral-100 antialiased;
+}
+
+/* Thin dark scrollbars to match the dense dark UI */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3f transparent;
+}

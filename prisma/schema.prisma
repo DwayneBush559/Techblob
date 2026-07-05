@@ -1,0 +1,176 @@
+// -----------------------------------------------------------------------------
+// WorldStar-style video platform — Prisma schema
+// PostgreSQL. Counters that take high-frequency writes (viewCount) are BigInt
+// and are only written by the batched Redis flush job, never per-request.
+// -----------------------------------------------------------------------------
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum VideoStatus {
+  PENDING     // submitted, awaiting staff review
+  PROCESSING  // approved, transcoding pipeline running
+  APPROVED    // live on the site (respecting publishedAt)
+  REJECTED    // declined by staff
+}
+
+enum Resolution {
+  P240
+  P360
+  P480
+  P720
+  P1080
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  username     String    @unique @db.VarChar(32)
+  passwordHash String
+  role         Role      @default(USER)
+  avatarUrl    String?
+  isBanned     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  videos           Video[]   @relation("UploadedVideos")
+  moderatedVideos  Video[]   @relation("ModeratedVideos")
+  comments         Comment[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique @db.VarChar(64)
+  slug      String   @unique @db.VarChar(64)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  videos Video[]
+
+  @@map("categories")
+}
+
+model Video {
+  id          String      @id @default(cuid())
+  slug        String      @unique @db.VarChar(160)
+  title       String      @db.VarChar(200)
+  description String?     @db.Text
+  status      VideoStatus @default(PENDING)
+
+  // Object-storage key of the original upload (set when presigned upload completes)
+  sourceKey    String  @unique
+  thumbnailUrl String?
+  durationSec  Int?
+
+  // Denormalized counters. viewCount is ONLY updated by the batch flush job.
+  viewCount    BigInt @default(0)
+  likeCount    Int    @default(0)
+  commentCount Int    @default(0)
+
+  // Publishing / scheduling. A video is publicly visible when
+  // status = APPROVED AND publishedAt <= now().
+  publishedAt DateTime?
+  rejectedReason String? @db.VarChar(500)
+
+  uploaderId  String
+  uploader    User   @relation("UploadedVideos", fields: [uploaderId], references: [id], onDelete: Cascade)
+  moderatorId String?
+  moderator   User?  @relation("ModeratedVideos", fields: [moderatorId], references: [id], onDelete: SetNull)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  renditions VideoRendition[]
+  comments   Comment[]
+  viewLogs   ViewLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Hot path: the public feed queries "APPROVED, published, newest first".
+  @@index([status, publishedAt(sort: Desc)])
+  @@index([categoryId, status, publishedAt(sort: Desc)])
+  @@index([uploaderId])
+  @@map("videos")
+}
+
+// One row per transcoded output (produced by the encoding pipeline).
+model VideoRendition {
+  id          String     @id @default(cuid())
+  videoId     String
+  video       Video      @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  resolution  Resolution
+  // CDN URL of the HLS playlist or MP4 for this rendition
+  url         String
+  mimeType    String     @default("video/mp4") @db.VarChar(64)
+  bitrateKbps Int
+  fileSizeB   BigInt
+
+  createdAt DateTime @default(now())
+
+  @@unique([videoId, resolution])
+  @@map("video_renditions")
+}
+
+model Comment {
+  id       String  @id @default(cuid())
+  body     String  @db.VarChar(2000)
+  isHidden Boolean @default(false)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  videoId  String
+  video    Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  // Single-level threading
+  parentId String?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([videoId, createdAt(sort: Desc)])
+  @@index([authorId])
+  @@map("comments")
+}
+
+// Append-only analytics table, written ONLY in batches by the flush job.
+// Partition by month in production (pg_partman) — Prisma treats it as a table.
+model ViewLog {
+  id         BigInt   @id @default(autoincrement())
+  videoId    String
+  video      Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  // SHA-256(ip + user-agent + daily salt) — dedupe without storing PII
+  viewerHash String   @db.VarChar(64)
+  watchedPct Int      @default(0) // furthest milestone reached: 0/25/50/75/100
+  country    String?  @db.VarChar(2)
+  createdAt  DateTime @default(now())
+
+  @@index([videoId, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@map("view_logs")
+}
