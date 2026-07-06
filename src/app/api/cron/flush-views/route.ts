@@ -17,9 +17,14 @@ export const maxDuration = 60;
 // ---------------------------------------------------------------------------
 
 export async function POST(req: NextRequest) {
+  // Accept the secret via Authorization header OR ?key= query param — some
+  // external cron services make custom headers awkward to configure.
   const auth = req.headers.get("authorization");
+  const key = req.nextUrl.searchParams.get("key");
   const expected = process.env.CRON_SECRET;
-  if (!expected || auth !== `Bearer ${expected}`) {
+  const authorized =
+    Boolean(expected) && (auth === `Bearer ${expected}` || key === expected);
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
