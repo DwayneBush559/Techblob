@@ -91,7 +91,7 @@ export function parseFeed(xml: string): FeedEntry[] {
   return entries;
 }
 
-function slugify(title: string, videoId: string): string {
+export function slugify(title: string, videoId: string): string {
   const base = title
     .toLowerCase()
     .normalize("NFKD")
