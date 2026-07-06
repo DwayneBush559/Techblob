@@ -19,12 +19,16 @@ interface InfiniteFeedProps {
   initialItems: VideoCardDto[];
   initialCursor: string | null;
   category?: string;
+  author?: string;
+  q?: string;
 }
 
 export default function InfiniteFeed({
   initialItems,
   initialCursor,
   category,
+  author,
+  q,
 }: InfiniteFeedProps) {
   const [items, setItems] = useState<VideoCardDto[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
@@ -42,6 +46,8 @@ export default function InfiniteFeed({
     try {
       const params = new URLSearchParams({ cursor, limit: "24" });
       if (category) params.set("category", category);
+      if (author) params.set("author", author);
+      if (q) params.set("q", q);
       const res = await fetch(`/api/videos?${params}`, {
         signal: AbortSignal.timeout(10_000),
       });
@@ -61,7 +67,7 @@ export default function InfiniteFeed({
       inFlightRef.current = false;
       setIsLoading(false);
     }
-  }, [cursor, category]);
+  }, [cursor, category, author, q]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;

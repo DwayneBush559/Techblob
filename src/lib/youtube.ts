@@ -9,22 +9,24 @@ import { createHash } from "node:crypto";
 // media itself always streams from YouTube (ToS-compliant).
 // ---------------------------------------------------------------------------
 
-interface ChannelConfig {
+export interface ChannelConfig {
   channelId: string;
   name: string;
+  slug: string; // used for /channel/<slug> pages
   categorySlug: "tech" | "ai" | "coding" | "gadgets";
+  tagline: string;
 }
 
 // All channel ids verified against their live RSS feeds.
 export const CHANNELS: ChannelConfig[] = [
-  { channelId: "UCsBjURrPoezykLs9EqgamOA", name: "Fireship", categorySlug: "coding" },
-  { channelId: "UCBJycsmduvYEL83R_U4JriQ", name: "Marques Brownlee", categorySlug: "gadgets" },
-  { channelId: "UCbfYPyITQ-7l4upoX8nvctg", name: "Two Minute Papers", categorySlug: "ai" },
-  { channelId: "UCXuqSBlHAE6Xw-yeJA0Tunw", name: "Linus Tech Tips", categorySlug: "tech" },
-  { channelId: "UCddiUEpeqJcYeBxX1IVBKvQ", name: "The Verge", categorySlug: "tech" },
-  { channelId: "UC9-y-6csu5WGm29I7JiwpnA", name: "Computerphile", categorySlug: "coding" },
-  { channelId: "UCYO_jab_esuFRV4b17AJtAw", name: "3Blue1Brown", categorySlug: "ai" },
-  { channelId: "UCSHZKyawb77ixDdsGog4iWA", name: "Lex Fridman", categorySlug: "ai" },
+  { channelId: "UCsBjURrPoezykLs9EqgamOA", name: "Fireship", slug: "fireship", categorySlug: "coding", tagline: "High-intensity code reports in 100 seconds" },
+  { channelId: "UCBJycsmduvYEL83R_U4JriQ", name: "Marques Brownlee", slug: "mkbhd", categorySlug: "gadgets", tagline: "Quality tech reviews" },
+  { channelId: "UCbfYPyITQ-7l4upoX8nvctg", name: "Two Minute Papers", slug: "two-minute-papers", categorySlug: "ai", tagline: "What a time to be alive — AI research explained" },
+  { channelId: "UCXuqSBlHAE6Xw-yeJA0Tunw", name: "Linus Tech Tips", slug: "linus-tech-tips", categorySlug: "tech", tagline: "PC hardware, builds, and tech entertainment" },
+  { channelId: "UCddiUEpeqJcYeBxX1IVBKvQ", name: "The Verge", slug: "the-verge", categorySlug: "tech", tagline: "Technology news and culture" },
+  { channelId: "UC9-y-6csu5WGm29I7JiwpnA", name: "Computerphile", slug: "computerphile", categorySlug: "coding", tagline: "Videos all about computers and computer stuff" },
+  { channelId: "UCYO_jab_esuFRV4b17AJtAw", name: "3Blue1Brown", slug: "3blue1brown", categorySlug: "ai", tagline: "Math and ML, animated beautifully" },
+  { channelId: "UCSHZKyawb77ixDdsGog4iWA", name: "Lex Fridman", slug: "lex-fridman", categorySlug: "ai", tagline: "Long-form conversations about AI and beyond" },
 ];
 
 const CATEGORIES = [
