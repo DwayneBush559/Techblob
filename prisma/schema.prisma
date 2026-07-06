@@ -38,6 +38,11 @@ enum Resolution {
   P1080
 }
 
+enum VideoSource {
+  UPLOAD  // user-submitted file, served by our CDN via VideoRenditions
+  YOUTUBE // ingested from a YouTube channel feed, rendered as an embed
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
@@ -80,10 +85,17 @@ model Video {
   description String?     @db.Text
   status      VideoStatus @default(PENDING)
 
-  // Object-storage key of the original upload (set when presigned upload completes)
+  // Object-storage key of the original upload (set when presigned upload
+  // completes). For YOUTUBE videos this is "youtube/<externalId>".
   sourceKey    String  @unique
   thumbnailUrl String?
   durationSec  Int?
+
+  // Content origin. YOUTUBE videos carry the YouTube video id in externalId
+  // and display authorName (the channel) instead of the uploader account.
+  sourceType VideoSource @default(UPLOAD)
+  externalId String?
+  authorName String?     @db.VarChar(120)
 
   // Denormalized counters. viewCount is ONLY updated by the batch flush job.
   viewCount    BigInt @default(0)
@@ -110,6 +122,8 @@ model Video {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // One row per external video, enforced at the DB level.
+  @@unique([sourceType, externalId])
   // Hot path: the public feed queries "APPROVED, published, newest first".
   @@index([status, publishedAt(sort: Desc)])
   @@index([categoryId, status, publishedAt(sort: Desc)])

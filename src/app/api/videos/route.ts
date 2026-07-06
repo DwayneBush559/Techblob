@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
         durationSec: true,
         viewCount: true,
         publishedAt: true,
+        authorName: true,
         category: { select: { name: true } },
         uploader: { select: { username: true } },
       },
@@ -62,7 +63,7 @@ export async function GET(req: NextRequest) {
         viewCount: v.viewCount.toString(),
         publishedAt: v.publishedAt?.toISOString() ?? null,
         categoryName: v.category?.name ?? null,
-        uploaderName: v.uploader.username,
+        uploaderName: v.authorName ?? v.uploader.username,
       })),
       nextCursor: hasMore ? page[page.length - 1]!.id : null,
     };

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getDisplayViewCount } from "@/lib/views";
 import { getTrendingFeed } from "@/lib/trending";
 import VideoPlayer from "@/components/VideoPlayer";
+import YouTubeEmbed from "@/components/YouTubeEmbed";
 import TrendingSidebar from "@/components/TrendingSidebar";
 import AdBanner from "@/components/AdBanner";
 import type { VideoSourceDto } from "@/lib/types";
@@ -33,7 +34,10 @@ async function getPublicVideo(slug: string) {
     video.status === "APPROVED" &&
     video.publishedAt !== null &&
     video.publishedAt <= new Date() &&
-    video.renditions.length > 0;
+    // Uploads need transcoded renditions; embeds need the external id.
+    (video.sourceType === "YOUTUBE"
+      ? Boolean(video.externalId)
+      : video.renditions.length > 0);
 
   return isPublic ? video : null;
 }
@@ -73,25 +77,49 @@ export default async function WatchPage({ params }: { params: { slug: string } }
     bitrateKbps: r.bitrateKbps,
   }));
 
+  const byline = video.authorName ?? video.uploader.username;
+
   return (
     <main className="mx-auto max-w-7xl px-3 py-4 sm:px-4">
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section>
-          <VideoPlayer
-            videoId={video.id}
-            title={video.title}
-            poster={video.thumbnailUrl}
-            sources={sources}
-          />
+          {video.sourceType === "YOUTUBE" && video.externalId ? (
+            <YouTubeEmbed
+              videoId={video.id}
+              youtubeId={video.externalId}
+              title={video.title}
+              thumbnailUrl={video.thumbnailUrl}
+            />
+          ) : (
+            <VideoPlayer
+              videoId={video.id}
+              title={video.title}
+              poster={video.thumbnailUrl}
+              sources={sources}
+            />
+          )}
 
           <div className="mt-3">
             <h1 className="text-lg font-bold leading-snug sm:text-xl">{video.title}</h1>
             <p className="mt-1 text-sm text-neutral-400">
-              {Number(displayCount).toLocaleString()} views · by {video.uploader.username}
+              {Number(displayCount).toLocaleString()} views · by {byline}
               {video.category ? ` · ${video.category.name}` : ""}
+              {video.sourceType === "YOUTUBE" && video.externalId ? (
+                <>
+                  {" · "}
+                  <a
+                    href={`https://www.youtube.com/watch?v=${video.externalId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-white"
+                  >
+                    Watch on YouTube
+                  </a>
+                </>
+              ) : null}
             </p>
             {video.description && (
-              <p className="mt-3 whitespace-pre-line text-sm text-neutral-300">
+              <p className="mt-3 line-clamp-[12] whitespace-pre-line text-sm text-neutral-300">
                 {video.description}
               </p>
             )}

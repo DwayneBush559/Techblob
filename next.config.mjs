@@ -6,6 +6,7 @@ const nextConfig = {
       { protocol: "https", hostname: "**.cloudfront.net" },
       { protocol: "https", hostname: "**.amazonaws.com" },
       { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "**.ytimg.com" },
     ],
   },
   async headers() {
