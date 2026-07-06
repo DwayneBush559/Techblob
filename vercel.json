@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/flush-views",
-      "schedule": "* * * * *"
+      "schedule": "0 5 * * *"
     }
   ]
 }
