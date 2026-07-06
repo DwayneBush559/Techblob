@@ -7,6 +7,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import TrendingSidebar from "@/components/TrendingSidebar";
 import AdBanner from "@/components/AdBanner";
+import CommentsSection from "@/components/CommentsSection";
 import type { VideoSourceDto } from "@/lib/types";
 
 export const revalidate = 60;
@@ -127,6 +128,12 @@ export default async function WatchPage({ params }: { params: { slug: string } }
 
           <AdBanner slot="leaderboard" className="mt-5 hidden md:flex" />
           <AdBanner slot="mobileBanner" className="mt-5 md:hidden" />
+
+          <CommentsSection
+            videoId={video.id}
+            slug={video.slug}
+            initialCount={video.commentCount}
+          />
         </section>
 
         <TrendingSidebar items={trending} />

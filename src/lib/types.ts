@@ -38,3 +38,23 @@ export interface StreamMetadataDto {
 }
 
 export type ViewEvent = "start" | "milestone_25" | "milestone_50" | "milestone_75" | "milestone_100";
+
+export interface CommentDto {
+  id: string;
+  body: string;
+  createdAt: string; // ISO
+  author: { username: string; avatarUrl: string | null };
+  replies?: CommentDto[]; // present on top-level comments only
+}
+
+export interface CommentPageDto {
+  items: CommentDto[];
+  nextCursor: string | null;
+  totalCount: number;
+}
+
+export interface SessionUserDto {
+  id: string;
+  username: string;
+  role: "USER" | "MODERATOR" | "ADMIN";
+}

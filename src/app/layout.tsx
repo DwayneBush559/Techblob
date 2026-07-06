@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import HeaderUser from "@/components/HeaderUser";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               >
                 Submit
               </Link>
+              <HeaderUser />
             </nav>
           </div>
         </header>

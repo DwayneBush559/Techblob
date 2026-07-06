@@ -1,4 +1,10 @@
-import { createHmac, timingSafeEqual, createHash } from "node:crypto";
+import {
+  createHmac,
+  timingSafeEqual,
+  createHash,
+  randomBytes,
+  scryptSync,
+} from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import type { Role, User } from "@prisma/client";
@@ -26,6 +32,26 @@ export function createSessionToken(userId: string): string {
   ).toString("base64url");
   const sig = createHmac("sha256", secret()).update(payload).digest("base64url");
   return `${payload}.${sig}`;
+}
+
+export function setSessionCookie(userId: string): void {
+  cookies().set(SESSION_COOKIE, createSessionToken(userId), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_TTL_MS / 1000,
+  });
+}
+
+export function clearSessionCookie(): void {
+  cookies().set(SESSION_COOKIE, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 export function verifySessionToken(token: string): string | null {
@@ -86,6 +112,33 @@ export async function requireStaff(): Promise<User> {
     throw new AuthError(403, "Staff access required");
   }
   return user;
+}
+
+// ---------------------------------------------------------------------------
+// Password hashing — scrypt (built into Node, memory-hard, no extra deps).
+// Stored format: "scrypt.<base64url salt>.<base64url hash>". Parameters live
+// in the verifier so they can be raised later without invalidating old rows.
+// ---------------------------------------------------------------------------
+
+const SCRYPT_KEYLEN = 64;
+
+export function hashPassword(password: string): string {
+  const salt = randomBytes(16);
+  const hash = scryptSync(password, salt, SCRYPT_KEYLEN);
+  return `scrypt.${salt.toString("base64url")}.${hash.toString("base64url")}`;
+}
+
+export function verifyPassword(password: string, stored: string): boolean {
+  const [scheme, saltB64, hashB64] = stored.split(".");
+  if (scheme !== "scrypt" || !saltB64 || !hashB64) return false;
+  try {
+    const salt = Buffer.from(saltB64, "base64url");
+    const expected = Buffer.from(hashB64, "base64url");
+    const given = scryptSync(password, salt, expected.length);
+    return timingSafeEqual(given, expected);
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------

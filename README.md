@@ -56,7 +56,7 @@ cache, S3-compatible object storage + CDN for the video bytes themselves.
 | `src/lib/trending.ts` | 5-min cached trending feed with lock + stale fallback |
 | `src/lib/s3.ts` | Presigned direct-to-bucket uploads |
 | `src/lib/ads.ts` | Simulated ad decision server (swap for VAST/VMAP) |
-| `src/lib/auth.ts` | HMAC session tokens, `requireUser`/`requireStaff`, viewer fingerprint |
+| `src/lib/auth.ts` | HMAC session tokens, scrypt password hashing, `requireUser`/`requireStaff`, viewer fingerprint |
 | `src/components/VideoPlayer.tsx` | Custom HTML5 player: pre-roll ads, milestone analytics, quality switch, fullscreen, keyboard |
 | `src/components/InfiniteFeed.tsx` | IntersectionObserver infinite scroll + in-feed ad injection |
 | `src/app/page.tsx` | High-density homepage: latest grid + trending sidebar + ad slots |
@@ -67,6 +67,10 @@ cache, S3-compatible object storage + CDN for the video bytes themselves.
 | `src/app/api/cron/flush-views/route.ts` | Batched Redis → Postgres flush (Vercel Cron / curl) |
 | `src/app/api/uploads/presign/route.ts` | Presigned upload + PENDING Video row |
 | `src/app/api/admin/videos/*` | Staff CMS: queue list, approve, schedule, reject, delete |
+| `src/app/api/auth/*` | Signup, login (email or username), logout, session lookup |
+| `src/app/login`, `src/app/signup` | Account pages; `?next=` returns users where they came from |
+| `src/app/api/videos/[id]/comments/route.ts` | Comments: cursor-paginated GET, rate-limited POST with single-level replies |
+| `src/components/CommentsSection.tsx` | Watch-page comments UI (client-side, keeps the page ISR) |
 | `src/app/api/trending/route.ts` | Cached trending JSON |
 | `src/app/api/ads/preroll/route.ts` | Ad decision endpoint |
 | `scripts/flush-views.ts` | Long-lived flush worker for non-serverless deploys |
@@ -113,14 +117,16 @@ docker run -d --name redis -p 6379:6379 redis:7
 - **Transcoding**: wire the S3 `ObjectCreated` event to AWS MediaConvert or an
   ffmpeg worker fleet producing HLS ladders (240p–1080p); write
   `VideoRendition` rows and flip `PROCESSING → APPROVED` on completion.
-- **Auth**: the HMAC session module is deliberately minimal — swap in
-  NextAuth/Clerk; `requireUser`/`requireStaff` call sites don't change.
+- **Auth**: email/username + password accounts are built in (scrypt hashing,
+  HMAC sessions). To add OAuth providers, swap in NextAuth/Clerk;
+  `requireUser`/`requireStaff` call sites don't change.
 - **Ads**: replace `selectPrerollAd` with a VAST/VMAP exchange call and mount
   GPT/Prebid units in `AdBanner`; the component contracts already match.
 - **ViewLog growth**: partition by month (`pg_partman`) and roll old
   partitions into a warehouse; the table is append-only by design.
 - **Redis HA**: use a managed Redis with AOF persistence; worst-case loss on
   failover is one flush interval (~1 min) of view deltas.
-- **Comments UI**: schema and cascade rules are in place; the endpoint/UI is
-  the next feature slice.
+- **Comments**: live — signed-in users comment and reply (single-level
+  threads) on watch pages; staff can hide rows via `isHidden`. A moderation
+  UI over that flag is a natural next slice.
 ```
