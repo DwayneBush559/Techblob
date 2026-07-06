@@ -11,11 +11,11 @@ import { createHash } from "node:crypto";
 const prisma = new PrismaClient();
 
 const SAMPLE_MP4S = [
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+  "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4",
+  "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4",
+  "https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4",
+  "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_640x360.m4v",
 ];
 
 const TITLES = [

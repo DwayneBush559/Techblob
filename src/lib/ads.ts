@@ -19,26 +19,26 @@ const AD_POOL: PrerollAd[] = [
   {
     id: "ad_energy_01",
     advertiser: "Volt Energy",
-    mediaUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    mediaUrl: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/1080/Jellyfish_1080_10s_30MB.mp4",
     clickThroughUrl: "https://example.com/volt-energy",
     skippableAfterSec: 5,
-    durationSec: 15,
+    durationSec: 10,
   },
   {
     id: "ad_sneaker_02",
     advertiser: "Apex Kicks",
-    mediaUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
+    mediaUrl: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_5MB.mp4",
     clickThroughUrl: "https://example.com/apex-kicks",
     skippableAfterSec: 5,
-    durationSec: 15,
+    durationSec: 10,
   },
   {
     id: "ad_mobile_03",
     advertiser: "Nova Mobile",
-    mediaUrl: "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
+    mediaUrl: "https://test-videos.co.uk/vids/sintel/mp4/h264/1080/Sintel_1080_10s_5MB.mp4",
     clickThroughUrl: "https://example.com/nova-mobile",
-    skippableAfterSec: 6,
-    durationSec: 15,
+    skippableAfterSec: 5,
+    durationSec: 10,
   },
 ];
 
