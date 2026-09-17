@@ -1,5 +1,9 @@
 # StreetView — High-Traffic Video Platform
 
+**Built by Dwayne Dwight Bush** — software developer, cybersecurity professional, and founder working across secure software, AI-enabled products, and scalable web applications.
+
+This repository is a public technical project demonstrating system-design decisions for a high-traffic video platform using Next.js, TypeScript, PostgreSQL/Prisma, Redis, object storage, CDN delivery, authentication, caching, and fault-tolerant background processing.
+
 A WorldStarHipHop-style video-sharing application: Next.js 14 (App Router) +
 TypeScript + Tailwind on the front, Next.js Route Handlers on the back,
 PostgreSQL (Prisma) as the system of record, Redis as the hot-path buffer and
@@ -110,6 +114,7 @@ Docker one-liners for the dependencies:
 ```bash
 docker run -d --name pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=worldstar -p 5432:5432 postgres:16
 docker run -d --name redis -p 6379:6379 redis:7
+docker run -d --name redis -p 6379:6379 redis:7
 ```
 
 ## Production notes / next steps
@@ -129,4 +134,8 @@ docker run -d --name redis -p 6379:6379 redis:7
 - **Comments**: live — signed-in users comment and reply (single-level
   threads) on watch pages; staff can hide rows via `isHidden`. A moderation
   UI over that flag is a natural next slice.
-```
+
+## Author
+
+**Dwayne Dwight Bush**  
+Software Development • Cybersecurity • AI Systems • Product Engineering
