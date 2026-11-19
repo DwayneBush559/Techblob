@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Scans a normal production build (.next) for anything that must not ship:
 // - browser code: the preview Redis stand-in, server secrets by name, AWS access keys
-// - everywhere: the personal handle or a github.io address (D-028), and the preview seed's marker
+// - everywhere: the personal handle or a GitHub Pages address (D-028), and the preview seed's marker
 //   node scripts/verify/check-bundle.mjs .next
 import fs from "node:fs";
 import path from "node:path";
@@ -29,7 +29,7 @@ const walk = (d, acc = []) => {
 const handle = ["dwayne", "bush", "559"].join("");
 const everywhere = [
   ["personal handle", (t) => t.toLowerCase().includes(handle)],
-  ["github.io address", (t) => t.toLowerCase().includes(["github", "io"].join("."))],
+  ["GitHub Pages address", (t) => t.toLowerCase().includes(["github", "io"].join("."))],
   ["preview seed data", (t) => t.includes("TECHBLOB_PREVIEW_SAMPLE_DATA") || t.includes("preview-viewer-pass")],
 ];
 const browserOnly = [
@@ -51,4 +51,4 @@ if (hits.length) {
   for (const h of hits.slice(0, 20)) console.log(`FOUND ${h}`);
   process.exit(1);
 }
-console.log("clean: no preview data, personal handle, github.io address or server secret in the build");
+console.log("clean: no preview data, personal handle, GitHub Pages address or server secret in the build");
