@@ -22,6 +22,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [adult, setAdult] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +36,7 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          mode === "login" ? { identifier, password } : { email, username, password },
+          mode === "login" ? { identifier, password } : { email, username, password, adult },
         ),
         signal: AbortSignal.timeout(15_000),
       });
@@ -123,6 +124,16 @@ export default function AuthForm({ mode }: { mode: "login" | "signup" }) {
           <p className="mt-1 text-xs text-neutral-500">At least 8 characters.</p>
         )}
       </div>
+
+      {mode === "signup" && (
+        <label className="flex items-start gap-2 text-xs text-neutral-300">
+          <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} className="mt-0.5" required />
+          <span>
+            I&apos;m 18 or older and I accept the <a href="/legal/terms" className="text-brand underline">Terms</a> and{" "}
+            <a href="/legal/privacy" className="text-brand underline">Privacy Policy</a>.
+          </span>
+        </label>
+      )}
 
       <button
         type="submit"

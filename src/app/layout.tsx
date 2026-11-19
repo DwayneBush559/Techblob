@@ -5,11 +5,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Techblob — Tech & AI Videos",
-    template: "%s · Techblob",
+    default: "TechBlob — Tech & AI Videos",
+    template: "%s · TechBlob",
   },
   description:
-    "The latest technology, AI, and coding videos from the best creators, all in one stream.",
+    "AI fails, terminal speedruns, tool premieres and builder breakdowns, in one stream. By Kavaro LLC.",
 };
 
 export const viewport: Viewport = {
@@ -20,10 +20,10 @@ export const viewport: Viewport = {
 
 const NAV_LINKS = [
   { href: "/trending", label: "Trending", always: true },
-  { href: "/category/ai", label: "AI", always: true },
-  { href: "/category/tech", label: "Tech", always: false },
-  { href: "/category/coding", label: "Coding", always: false },
-  { href: "/category/gadgets", label: "Gadgets", always: false },
+  { href: "/category/ai-fails", label: "AI Fails", always: true },
+  { href: "/category/terminal-speedruns", label: "Terminal Speedruns", always: false },
+  { href: "/category/tool-premieres", label: "Tool Premieres", always: false },
+  { href: "/category/builder-breakdowns", label: "Builder Breakdowns", always: false },
   { href: "/channels", label: "Channels", always: false },
 ];
 
@@ -72,10 +72,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/search" className="hover:text-white">Search</Link>
               <Link href="/upload" className="hover:text-white">Submit a Video</Link>
               <Link href="/about" className="hover:text-white">About</Link>
+              <Link href="/legal/privacy" className="hover:text-white">Privacy</Link>
+              <Link href="/legal/terms" className="hover:text-white">Terms</Link>
+              <Link href="/legal/dmca" className="hover:text-white">DMCA</Link>
+              <Link href="/legal/delete-account" className="hover:text-white">Delete account</Link>
+              <Link href="/legal/support" className="hover:text-white">Support</Link>
             </nav>
             <p className="text-center text-xs text-neutral-500">
-              © {new Date().getFullYear()} Techblob. Video content belongs to its creators and
-              streams via official YouTube embeds.
+              © {new Date().getFullYear()} Kavaro LLC. TechBlob is for adults 18 and over. Videos belong to their
+              creators; YouTube videos play through YouTube&apos;s official embed. Contact: info@kavarollc.com
             </p>
           </div>
         </footer>

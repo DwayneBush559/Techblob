@@ -16,7 +16,7 @@ import type { Role, User } from "@prisma/client";
 // Payload: { uid, exp }
 // ---------------------------------------------------------------------------
 
-const SESSION_COOKIE = "ws_session";
+const SESSION_COOKIE = "tb_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 14; // 14 days
 
 function secret(): Buffer {

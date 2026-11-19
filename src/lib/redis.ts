@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { PreviewRedis } from "./preview-redis";
 
 const globalForRedis = globalThis as unknown as { redis?: Redis };
 
@@ -16,7 +17,9 @@ function createClient(): Redis {
   return client;
 }
 
-export const redis = globalForRedis.redis ?? createClient();
+// The local preview (TECHBLOB_PREVIEW=1) runs with an in-memory stand-in instead of a Redis server.
+export const redis: Redis =
+  globalForRedis.redis ?? (process.env.TECHBLOB_PREVIEW === "1" ? (new PreviewRedis() as unknown as Redis) : createClient());
 
 if (process.env.NODE_ENV !== "production") globalForRedis.redis = redis;
 

@@ -20,6 +20,8 @@ const bodySchema = z.object({
     .trim()
     .regex(/^[A-Za-z0-9_]{3,32}$/, "3–32 letters, numbers, or underscores"),
   password: z.string().min(8).max(200),
+  // Terms 1: accounts are for adults 18 and over.
+  adult: z.literal(true, { errorMap: () => ({ message: "confirm you're 18 or older and accept the Terms" }) }),
 });
 
 export async function POST(req: NextRequest) {

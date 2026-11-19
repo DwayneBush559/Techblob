@@ -8,6 +8,7 @@ import YouTubeEmbed from "@/components/YouTubeEmbed";
 import TrendingSidebar from "@/components/TrendingSidebar";
 import AdBanner from "@/components/AdBanner";
 import CommentsSection from "@/components/CommentsSection";
+import ReportButton from "@/components/ReportButton";
 import type { VideoSourceDto } from "@/lib/types";
 
 export const revalidate = 60;
@@ -102,6 +103,7 @@ export default async function WatchPage({ params }: { params: { slug: string } }
 
           <div className="mt-3">
             <h1 className="text-lg font-bold leading-snug sm:text-xl">{video.title}</h1>
+            <div className="mt-1"><ReportButton videoId={video.id} /></div>
             <p className="mt-1 text-sm text-neutral-400">
               {Number(displayCount).toLocaleString()} views · by {byline}
               {video.category ? ` · ${video.category.name}` : ""}

@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------------
-// WorldStar-style video platform — Prisma schema
+// TechBlob (Kavaro LLC) — Prisma schema
 // PostgreSQL. Counters that take high-frequency writes (viewCount) are BigInt
 // and are only written by the batched Redis flush job, never per-request.
 // -----------------------------------------------------------------------------
@@ -61,6 +61,9 @@ model User {
   videos           Video[]   @relation("UploadedVideos")
   moderatedVideos  Video[]   @relation("ModeratedVideos")
   comments         Comment[]
+  reportsMade      Report[]    @relation("ReportsMade")
+  blocksMade       UserBlock[] @relation("BlocksMade")
+  blockedBy        UserBlock[] @relation("BlockedBy")
 
   @@index([role])
   @@map("users")
@@ -118,6 +121,7 @@ model Video {
   renditions VideoRendition[]
   comments   Comment[]
   viewLogs   ViewLog[]
+  reports    Report[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -187,4 +191,34 @@ model ViewLog {
   @@index([videoId, createdAt(sort: Desc)])
   @@index([createdAt])
   @@map("view_logs")
+}
+
+// A viewer's report on a video or comment. Every report is reviewed within 24 hours (Terms; src/lib/techblob.ts).
+model Report {
+  id         String    @id @default(cuid())
+  reason     String    @db.VarChar(64)
+  details    String?   @db.VarChar(1000)
+  reporterId String
+  reporter   User      @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  videoId    String?
+  video      Video?    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  commentId  String?
+  resolvedAt DateTime?
+  resolution String?   @db.VarChar(200)
+  createdAt  DateTime  @default(now())
+
+  @@index([resolvedAt, createdAt])
+  @@map("reports")
+}
+
+// A block: the blocker no longer sees the blocked person's comments.
+model UserBlock {
+  blockerId String
+  blocker   User     @relation("BlocksMade", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([blockerId, blockedId])
+  @@map("user_blocks")
 }

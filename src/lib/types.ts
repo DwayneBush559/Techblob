@@ -43,7 +43,7 @@ export interface CommentDto {
   id: string;
   body: string;
   createdAt: string; // ISO
-  author: { username: string; avatarUrl: string | null };
+  author: { id: string; username: string; avatarUrl: string | null };
   replies?: CommentDto[]; // present on top-level comments only
 }
 

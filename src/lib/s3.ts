@@ -13,7 +13,7 @@ const s3 = new S3Client({
   },
 });
 
-const BUCKET = process.env.S3_BUCKET ?? "worldstar-uploads";
+const BUCKET = process.env.S3_BUCKET ?? "techblob-uploads";
 
 export const ALLOWED_VIDEO_TYPES = new Map<string, string>([
   ["video/mp4", "mp4"],

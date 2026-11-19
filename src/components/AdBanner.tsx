@@ -1,13 +1,13 @@
-// Display-ad placeholder slots. In production each slot mounts a GPT
-// (Google Publisher Tag) or Prebid unit keyed by `slot`; sizes here mirror
-// standard IAB units so the swap is a drop-in.
+// Ad slots. With no outside advertiser booked, each slot shows a Kavaro house-ad card (one of Kavaro's ten apps),
+// labeled as Kavaro's own. Sizes mirror standard IAB units so a real ad unit can replace the card later.
+import { HOUSE_AD_LABEL, pickHouseAd } from "@/lib/techblob";
 
-const SLOT_SIZES: Record<string, { w: number; h: number; label: string }> = {
-  leaderboard: { w: 728, h: 90, label: "728×90 Leaderboard" },
-  mobileBanner: { w: 320, h: 100, label: "320×100 Mobile Banner" },
-  mediumRectangle: { w: 300, h: 250, label: "300×250 MPU" },
-  halfPage: { w: 300, h: 600, label: "300×600 Half Page" },
-  inFeed: { w: 0, h: 0, label: "Native In-Feed" },
+const SLOT_SIZES: Record<string, { w: number; h: number }> = {
+  leaderboard: { w: 728, h: 90 },
+  mobileBanner: { w: 320, h: 100 },
+  mediumRectangle: { w: 300, h: 250 },
+  halfPage: { w: 300, h: 600 },
+  inFeed: { w: 0, h: 0 },
 };
 
 interface AdBannerProps {
@@ -17,24 +17,23 @@ interface AdBannerProps {
 
 export default function AdBanner({ slot, className = "" }: AdBannerProps) {
   const size = SLOT_SIZES[slot] ?? SLOT_SIZES.mediumRectangle!;
-
+  const ad = pickHouseAd(`${slot}:${new Date().toISOString().slice(0, 10)}`);
   return (
-    <div
+    <a
+      href={ad.url}
+      target="_blank"
+      rel="noopener noreferrer"
       data-ad-slot={slot}
-      aria-label="Advertisement"
-      className={`flex items-center justify-center overflow-hidden rounded border border-dashed border-surface-border bg-surface-raised ${className}`}
-      style={
-        slot === "inFeed"
-          ? { minHeight: "10rem" }
-          : { maxWidth: size.w, minHeight: Math.min(size.h, 250), margin: "0 auto", width: "100%" }
-      }
+      data-house-ad={ad.app}
+      aria-label={`${ad.app}: ${ad.pitch} (${HOUSE_AD_LABEL})`}
+      className={`flex items-center justify-center overflow-hidden rounded border border-surface-border bg-surface-raised hover:border-brand ${className}`}
+      style={slot === "inFeed" ? { minHeight: "8rem" } : { maxWidth: size.w, minHeight: Math.min(size.h, 250), margin: "0 auto", width: "100%" }}
     >
       <div className="p-4 text-center">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">
-          Advertisement
-        </p>
-        <p className="mt-1 text-xs text-neutral-600">{size.label}</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">{HOUSE_AD_LABEL}</p>
+        <p className="mt-1 text-sm font-black text-white">{ad.app}</p>
+        <p className="mt-0.5 text-xs text-neutral-300">{ad.pitch}</p>
       </div>
-    </div>
+    </a>
   );
 }

@@ -1,13 +1,26 @@
-# StreetView — High-Traffic Video Platform
+# TechBlob
 
-**Built by Dwayne Dwight Bush** — software developer, cybersecurity professional, and founder working across secure software, AI-enabled products, and scalable web applications.
+TechBlob is Kavaro LLC's tech video site (PRD-023): AI Fails, Terminal Speedruns, Tool Premieres and Builder
+Breakdowns in one fast stream, with Kavaro house-ad cards for its own apps in the ad slots. Built with Next.js 14
+(App Router), TypeScript and Tailwind; PostgreSQL through Prisma; Redis for view buffering; S3-compatible storage and a
+CDN for video bytes. Contact: info@kavarollc.com.
 
-This repository is a public technical project demonstrating system-design decisions for a high-traffic video platform using Next.js, TypeScript, PostgreSQL/Prisma, Redis, object storage, CDN delivery, authentication, caching, and fault-tolerant background processing.
+## 2026-11-19 (Wave 2, combined/techblob)
 
-A WorldStarHipHop-style video-sharing application: Next.js 14 (App Router) +
-TypeScript + Tailwind on the front, Next.js Route Handlers on the back,
-PostgreSQL (Prisma) as the system of record, Redis as the hot-path buffer and
-cache, S3-compatible object storage + CDN for the video bytes themselves.
+- Rebranded from an earlier "StreetView" draft: no clone wording, no personal name (D-028). Session cookie renamed.
+- `src/lib/techblob.ts`: the four tech categories, ten Kavaro house-ad cards (labeled as Kavaro's own), weekly
+  sponsored premiere slots (labeled, no price), and the 24-hour report queue. The made-up pre-roll advertisers
+  are gone: no pre-roll plays until a real campaign is booked.
+- Report and Block: `reports` and `user_blocks` tables (migration `20261119120000_reports_and_blocks`), POST
+  `/api/reports`, staff PATCH `/api/reports/:id`, `/api/blocks`, and the staff queue at `/admin/reports`.
+- Legal (D-028/D-031): `src/legal/content.ts` renders `/legal/{privacy,terms,dmca,delete-account,support}` and
+  writes `legal/*.html` (`node scripts/build-legal.mjs`; for www.kavarollc.com/legal/techblob/, not published).
+  Sign-up requires confirming 18+. Account > Delete account (DELETE `/api/account`).
+- Local preview with no outside calls: `node scripts/preview/serve.mjs` starts PGlite (Postgres in WebAssembly) on a
+  local socket, applies the real migrations, seeds labeled sample videos, and runs the production build on
+  127.0.0.1:4340 with an in-memory Redis stand-in (`TECHBLOB_PREVIEW=1`). Check: `bash scripts/verify/full-check.sh`.
+- Not done: the DMCA designated agent still has to be registered with the U.S. Copyright Office (founder); sponsored
+  premieres aren't sold; YouTube ingestion and uploads need their keys.
 
 ## System architecture
 
@@ -112,7 +125,7 @@ npm run views:flush
 Docker one-liners for the dependencies:
 
 ```bash
-docker run -d --name pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=worldstar -p 5432:5432 postgres:16
+docker run -d --name pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=techblob -p 5432:5432 postgres:16
 docker run -d --name redis -p 6379:6379 redis:7
 docker run -d --name redis -p 6379:6379 redis:7
 ```
@@ -134,8 +147,3 @@ docker run -d --name redis -p 6379:6379 redis:7
 - **Comments**: live — signed-in users comment and reply (single-level
   threads) on watch pages; staff can hide rows via `isHidden`. A moderation
   UI over that flag is a natural next slice.
-
-## Author
-
-**Dwayne Dwight Bush**  
-Software Development • Cybersecurity • AI Systems • Product Engineering

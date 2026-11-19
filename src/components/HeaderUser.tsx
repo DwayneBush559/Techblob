@@ -52,9 +52,9 @@ export default function HeaderUser() {
 
   return (
     <span className="flex items-center gap-2">
-      <span className="hidden max-w-28 truncate text-neutral-200 sm:inline" title={user.username}>
+      <a href="/account" className="hidden max-w-28 truncate text-neutral-200 hover:text-white sm:inline" title={`${user.username}: account`}>
         {user.username}
-      </span>
+      </a>
       <button
         type="button"
         onClick={onSignOut}

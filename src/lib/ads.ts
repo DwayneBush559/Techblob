@@ -1,8 +1,9 @@
-// ---------------------------------------------------------------------------
-// Simulated ad server. In production this is a VAST/VMAP call to an ad
-// exchange; the player's contract (PrerollAd) stays the same either way.
-// ---------------------------------------------------------------------------
-
+/**
+ * Pre-roll ad decisions. No outside advertiser is booked, so no pre-roll plays and the player goes straight to the
+ * video. (The earlier pool showed made-up brands with stock clips from an outside host.) TechBlob's display slots
+ * carry Kavaro house-ad cards instead: see AdBanner and src/lib/techblob.ts. When a real campaign is signed, add it to
+ * BOOKED (or swap this body for a VAST/VMAP call) without touching the player.
+ */
 export interface PrerollAd {
   id: string;
   advertiser: string;
@@ -15,45 +16,13 @@ export interface PrerollAd {
   durationSec: number;
 }
 
-const AD_POOL: PrerollAd[] = [
-  {
-    id: "ad_energy_01",
-    advertiser: "Volt Energy",
-    mediaUrl: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/1080/Jellyfish_1080_10s_30MB.mp4",
-    clickThroughUrl: "https://example.com/volt-energy",
-    skippableAfterSec: 5,
-    durationSec: 10,
-  },
-  {
-    id: "ad_sneaker_02",
-    advertiser: "Apex Kicks",
-    mediaUrl: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_5MB.mp4",
-    clickThroughUrl: "https://example.com/apex-kicks",
-    skippableAfterSec: 5,
-    durationSec: 10,
-  },
-  {
-    id: "ad_mobile_03",
-    advertiser: "Nova Mobile",
-    mediaUrl: "https://test-videos.co.uk/vids/sintel/mp4/h264/1080/Sintel_1080_10s_5MB.mp4",
-    clickThroughUrl: "https://example.com/nova-mobile",
-    skippableAfterSec: 5,
-    durationSec: 10,
-  },
-];
+const BOOKED: PrerollAd[] = [];
 
-/**
- * Deterministic-ish rotation keyed on videoId + hour so the same video shows
- * a stable ad within the hour (cache-friendly) but rotates over time.
- */
-export function selectPrerollAd(videoId: string): PrerollAd {
-  const hourBucket = Math.floor(Date.now() / 3_600_000);
+/** Rotates booked campaigns by video and hour; null when nothing is booked. */
+export function selectPrerollAd(videoId: string, booked: PrerollAd[] = BOOKED): PrerollAd | null {
+  if (booked.length === 0) return null;
+  const seed = `${videoId}:${Math.floor(Date.now() / 3_600_000)}`;
   let hash = 0;
-  const seed = `${videoId}:${hourBucket}`;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
-  }
-  const ad = AD_POOL[Math.abs(hash) % AD_POOL.length];
-  if (!ad) throw new Error("Ad pool is empty");
-  return ad;
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  return booked[Math.abs(hash) % booked.length] ?? null;
 }

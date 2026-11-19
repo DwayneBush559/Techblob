@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { CommentDto, CommentPageDto, SessionUserDto } from "@/lib/types";
+import ReportButton from "@/components/ReportButton";
 
 // ---------------------------------------------------------------------------
 // Watch-page comments. The page itself stays ISR; everything session- or
@@ -119,6 +120,7 @@ function CommentItem({
   onPosted: (c: CommentDto, parentId: string | null) => void;
 }) {
   const [replying, setReplying] = useState(false);
+  const [blocked, setBlocked] = useState(false);
 
   return (
     <li className="flex gap-3">
@@ -131,6 +133,21 @@ function CommentItem({
         <p className="mt-0.5 whitespace-pre-line break-words text-sm text-neutral-200">
           {comment.body}
         </p>
+        <span className="mt-1 mr-3 inline-flex gap-3">
+          <ReportButton commentId={comment.id} />
+          {user && user.id !== comment.author.id ? (
+            <button
+              type="button"
+              onClick={async () => {
+                const res = await fetch("/api/blocks", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: comment.author.id }) });
+                if (res.ok) setBlocked(true);
+              }}
+              className="text-xs font-semibold text-neutral-400 hover:text-white"
+            >
+              {blocked ? "Blocked (reload to hide)" : "Block"}
+            </button>
+          ) : null}
+        </span>
         {user && comment.replies && (
           <button
             type="button"

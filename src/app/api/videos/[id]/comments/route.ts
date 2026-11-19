@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { requireUser, AuthError } from "@/lib/auth";
+import { getCurrentUser, requireUser, AuthError } from "@/lib/auth";
 import type { CommentDto, CommentPageDto } from "@/lib/types";
 import type { Prisma } from "@prisma/client";
 
@@ -21,7 +21,7 @@ const PAGE_SIZE = 20;
 const MAX_COMMENTS_PER_5_MIN = 10;
 
 const commentInclude = {
-  author: { select: { username: true, avatarUrl: true } },
+  author: { select: { id: true, username: true, avatarUrl: true } },
 } satisfies Prisma.CommentInclude;
 
 type CommentRow = Prisma.CommentGetPayload<{ include: typeof commentInclude }>;
@@ -31,7 +31,7 @@ function toDto(row: CommentRow, replies?: CommentDto[]): CommentDto {
     id: row.id,
     body: row.body,
     createdAt: row.createdAt.toISOString(),
-    author: { username: row.author.username, avatarUrl: row.author.avatarUrl },
+    author: { id: row.author.id, username: row.author.username, avatarUrl: row.author.avatarUrl },
     ...(replies ? { replies } : {}),
   };
 }
@@ -40,9 +40,15 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const cursor = req.nextUrl.searchParams.get("cursor");
 
   try {
+    // People the viewer blocked don't show up in their comments.
+    const viewer = await getCurrentUser().catch(() => null);
+    const blocked = viewer
+      ? (await prisma.userBlock.findMany({ where: { blockerId: viewer.id }, select: { blockedId: true } })).map((b) => b.blockedId)
+      : [];
+    const notBlocked = blocked.length ? { authorId: { notIn: blocked } } : {};
     const [topLevel, totalCount] = await Promise.all([
       prisma.comment.findMany({
-        where: { videoId: params.id, isHidden: false, parentId: null },
+        where: { videoId: params.id, isHidden: false, parentId: null, ...notBlocked },
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: PAGE_SIZE + 1,
         ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -56,7 +62,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     const replies = page.length
       ? await prisma.comment.findMany({
-          where: { parentId: { in: page.map((c) => c.id) }, isHidden: false },
+          where: { parentId: { in: page.map((c) => c.id) }, isHidden: false, ...notBlocked },
           orderBy: { createdAt: "asc" },
           include: commentInclude,
         })
